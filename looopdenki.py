@@ -70,12 +70,13 @@ def get_now_denkibiyori():
         hhmm_list.append(hhmm_str)
 
     merged_list = [(hhmm_list[i], level_1[i]) for i in range(len(level_1))]
+    print(merged_list)
 
     # データが-0.5から0になる時間（HHMM形式）を取得
     biyori_endtime = None
     for i in range(len(merged_list) - 1):
-        if merged_list[i][1] != -0.5 and merged_list[i + 1][1] == -0.5:
-            biyori_endtime = merged_list[i][0]
+        if merged_list[i][1] == -0.5 and merged_list[i + 1][1] != -0.5:
+            biyori_endtime = merged_list[i + 1][0]
             break
 
     if biyori_endtime:
