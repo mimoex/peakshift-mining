@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timedelta
 import subprocess
 import time
+import os
 
 def get_prices(url):
     # GETリクエストを送信してJSONデータを取得
@@ -16,11 +17,6 @@ def get_prices(url):
     else:
         print("APIリクエストが失敗しました。ステータスコード:", response.status_code)
         sys.exit(1)  # プログラムを終了
-
-# サブプロセス実行用の関数
-def run_subprocess():
-    # ここに実行したいコマンドを記述
-    subprocess.run(["your_command_here"])
 
 def time_move_down():
     # 現在の時刻を取得
@@ -40,11 +36,12 @@ def time_move_down():
 
     return new_hhmm
 
+# 現在時刻とでんき日和データの照合
 def get_flag_at_time(data_list, input_time):
     for hhmm, flag in data_list:
         if hhmm == input_time:
             return flag
-    return None  # 時刻が見つからない場合はNoneを返すか、適切なデフォルト値を返すことができます
+    return None  # 時刻が見つからない場合はNoneを返す
 
 # APIからでんき日和を取得し、そうではなくなる時間を取得する関数
 def get_now_denkibiyori():
@@ -55,8 +52,8 @@ def get_now_denkibiyori():
     # JSONデータを解析
     data = json.loads(json_str)
 
-    # "1"の"level"を抽出
-    level_1 = data["1"]["level"] # -0.5 電気日和
+    # "1"の"level"を抽出(今日のでんき日和データの抽出)
+    level_1 = data["1"]["level"] # -0.5が電気日和
 
     time_list = data["label"] # 30分ごとのリスト ['0', '0.5', '1', ...]
 
@@ -83,7 +80,7 @@ def get_now_denkibiyori():
         print(f"でんき日和終了時刻は {biyori_endtime} です。")
     else:
         print("該当する時間はありません。")
-        sys.exit(1) # プログラムを終了
+        sys.exit() # プログラムを終了
 
     # テストデータ
     #merged_list = [
@@ -102,7 +99,7 @@ def get_now_denkibiyori():
 # 採掘開始 (end_time: 'HHMM')
 def start_mining(end_time):
     try:
-        xmrig_process = subprocess.Popen(["path/to/xmrig"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        xmrig_process = subprocess.Popen(["C:\\Users\\hoge\\xmrig\\build\\Release\\xmrig.cmd"], shell=True)
         print("マイニングを開始しました。")
         print(f"{end_time}に終了します。")
 
@@ -111,8 +108,9 @@ def start_mining(end_time):
 
             # 終了時間に達したらxmrigを終了
             if current_time >= end_time:
-                xmrig_process.terminate()
+                #xmrig_process.kill()
                 print("マイニングを終了しました。")
+                os.system("shutdown /r /t 1")
                 break
 
             # 一定時間（例: 1分）待機して再度時刻を確認
