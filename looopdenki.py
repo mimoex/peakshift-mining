@@ -69,6 +69,12 @@ def get_now_denkibiyori():
     merged_list = [(hhmm_list[i], level_1[i]) for i in range(len(level_1))]
     print(merged_list)
 
+    biyori_starttime=None
+    for i in range(len(merged_list) - 1):
+        if merged_list[i][1] != -0.5 and merged_list[i + 1][1] == -0.5:
+            biyori_starttime = merged_list[i + 1][0]
+            break
+
     # データが-0.5から0になる時間（HHMM形式）を取得
     biyori_endtime = None
     for i in range(len(merged_list) - 1):
@@ -76,8 +82,10 @@ def get_now_denkibiyori():
             biyori_endtime = merged_list[i + 1][0]
             break
 
-    if biyori_endtime:
-        print(f"でんき日和終了時刻は {biyori_endtime} です。")
+    if biyori_starttime:
+        print(f"でんき日和開始時刻は {biyori_starttime} です。")
+        if biyori_endtime:
+            print(f"終了時刻は {biyori_endtime} です。")
     else:
         print("該当する時間はありません。")
         sys.exit() # プログラムを終了
@@ -94,10 +102,19 @@ def get_now_denkibiyori():
     near_time=time_move_down()
 
     denki_biyori=get_flag_at_time(merged_list, near_time)
-    return denki_biyori, biyori_endtime
+    return denki_biyori, biyori_starttime, biyori_endtime
 
 # 採掘開始 (end_time: 'HHMM')
-def start_mining(end_time):
+def start_mining(start_time, end_time):
+    while True:
+            current_time = time.strftime("%H%M")
+
+            # 終了時間に達したら待機終了
+            if current_time >= start_time:
+                break
+
+            # 一定時間（例: 1分）待機して再度時刻を確認
+            time.sleep(60)
     try:
         xmrig_process = subprocess.Popen(["C:\\Users\\hoge\\xmrig\\build\\Release\\xmrig.cmd"], shell=True)
         print("マイニングを開始しました。")
@@ -120,5 +137,5 @@ def start_mining(end_time):
         print(f"エラーが発生しました: {str(e)}")
 
 if __name__ == "__main__":
-    flag, end_time=get_now_denkibiyori()
-    start_mining(end_time)
+    flag, start_time, end_time=get_now_denkibiyori()
+    start_mining(start_time, end_time)
