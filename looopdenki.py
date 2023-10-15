@@ -88,7 +88,16 @@ def get_now_denkibiyori():
             print(f"終了時刻は {biyori_endtime} です。")
     else:
         print("該当する時間はありません。")
-        sys.exit() # プログラムを終了
+        # 1分以内にyキーを押すとプログラム終了
+        # 放置するとシャットダウン
+        print("1分以内にyキーを押すとプログラムを終了します。")
+        # 1分後にシャットダウン。キャンセルするにはyキーを押す
+        os.system("shutdown /s /t 60")
+        key = input()
+        if key == "y":
+            os.system("shutdown /a")
+            sys.exit() # プログラムを終了
+
 
     # テストデータ
     #merged_list = [
@@ -127,7 +136,7 @@ def start_mining(start_time, end_time):
             if current_time >= end_time:
                 #xmrig_process.kill()
                 print("マイニングを終了しました。")
-                os.system("shutdown /r /t 1")
+                os.system("shutdown /s /t 1")
                 break
 
             # 一定時間（例: 1分）待機して再度時刻を確認
