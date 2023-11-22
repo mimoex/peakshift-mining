@@ -6,8 +6,6 @@ import subprocess
 import time
 import os
 
-today_list=[]
-
 # APIからJSONデータを取得する関数
 def get_prices(url):
     # GETリクエストを送信してJSONデータを取得
@@ -15,6 +13,7 @@ def get_prices(url):
     
     # ステータスコードを確認
     if response.status_code == 200:
+        print("APIリクエストが成功しました。")
         # JSON文字列を取得
         return response.text
     else:
@@ -70,11 +69,21 @@ def get_api():
         hhmm_str = f"{hours:02d}{minutes:02d}"
         hhmm_list.append(hhmm_str)
     today_list = [(hhmm_list[i], level_1[i]) for i in range(len(level_1))]
+    return today_list
     
-
+today_list=None
+today=None
 
 # 現在時刻のでんき日和データを取得する関数
 def get_now_denkibiyori():
+    global today_list
+    global today
+
+    #today_listがNoneの場合はAPIからデータを取得
+    if today_list is None:
+        today_list=get_api()
+        #today_listの先頭に現在の日付を追加
+        today=datetime.now().strftime('%Y%m%d')
     
     # テストデータ
     """
@@ -86,9 +95,15 @@ def get_now_denkibiyori():
      ('1930', 0), ('2000', 0), ('2030', 0), ('2100', 0.5), ('2130', 0), ('2200', 9), ('2230', 0), ('2300', 0), ('2330', 0)
      ]
     """
-
-
+    print(today_list)
+    # 現在時刻を取得
     near_time=time_move_down()
+
+    # today_listの先頭の日付と現在の日付が一致しない場合はAPIからデータを取得
+    if today != datetime.now().strftime('%Y%m%d'):
+        today_list=get_api()
+        #today_listの先頭に現在の日付を上書き
+        today = datetime.now().strftime('%Y%m%d')
 
     denki_biyori=get_flag_at_time(today_list, near_time)
     return denki_biyori
@@ -99,7 +114,6 @@ def show_now_time():
 
 def danbou_mining():
     xmrig_process = None  # マイニングプロセスを追跡するための変数
-    print(today_list)
 
     # 24時間動作するループ
     while True:
@@ -121,12 +135,12 @@ def danbou_mining():
                 #xmrig_process.kill()
                 print(f"{show_now_time()} マイニングを停止しました.")
                 os.system("shutdown /r /t 30")
+                break
             else:
                 pass
         time.sleep(60)
         
 
 if __name__ == "__main__":
-	today_list =get_api()
 	danbou_mining()
 	
